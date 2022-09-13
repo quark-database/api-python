@@ -7,7 +7,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="quarkapi",
-    version="1.0",
+    version="1.1",
     author="Anatoly Frolov (anafro)",
     author_email="contact@anafro.ru",
     description="The Quark API for Python developers.",
