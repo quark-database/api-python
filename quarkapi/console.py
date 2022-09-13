@@ -28,12 +28,12 @@ class ServerInfo:
 def try_connect_and_read_queries(server_info: ServerInfo) -> None:
     client = Client(host=server_info.host, port=server_info.port, token=server_info.token)
     try:
-        with console.status("[gray]Trying to connect to the server...", spinner="earth"):
+        with console.status("[gray]Trying to connect to the server...[/gray]", spinner="earth"):
             client.connect()
 
         query = ""
         while query != "exit":
-            with console.status("[gray]Sending a query...", spinner="earth") as status:
+            with console.status("[gray]Sending a query...[/gray]", spinner="earth") as status:
                 result = client.query(query)
                 status.stop()
 
@@ -54,21 +54,21 @@ def try_connect_and_read_queries(server_info: ServerInfo) -> None:
                         else:
                             console.print("<no table returned>", style="gray", justify="center")
                     case QueryExecutionStatus.SYNTAX_ERROR:
-                        console.print(f":no entry:  Your query contains a syntax error.")
+                        console.print(f":prohibited:  Your query contains a syntax error.")
                         console.print(f":envelope:  Message: {result.message}")
                     case QueryExecutionStatus.SERVER_ERROR:
-                        console.print(f":no entry:  Server got an error.")
+                        console.print(f":prohibited:  Server got an error.")
                         console.print(f":envelope:  Message: {result.message}")
                         if result.has_exception():
-                            console.print(f":no entry: Exception message: {result.exception}")
+                            console.print(f":prohibited:  Exception message: {result.exception}")
                     case QueryExecutionStatus.MIDDLEWARE_ERROR:
-                        console.print(f":no entry:  Your query cannot be handled.")
+                        console.print(f":prohibited:  Your query cannot be handled.")
                         console.print(f":envelope:  Message: {result.message}")
 
                 console.print("")
     except Exception as exception:
-        console.print(f":no entry: Connection to {server_info.host}:{server_info.port} failed, "
-                      f"because of {type(exception.__name__)}: {str(exception)}")
+        console.print(f":prohibited: Connection to {server_info.host}:{server_info.port} failed, "
+                      f"because of {type(exception).__name__}: {str(exception)}")
 
 
 def load_recent_servers() -> List[ServerInfo]:
@@ -85,7 +85,11 @@ def load_recent_servers() -> List[ServerInfo]:
 def save_server_to_recent_servers_file(server_to_save: ServerInfo) -> None:
     recent_servers_to_save = load_recent_servers()
 
-    existing_recent_server = next((server_to_save == recent_server for recent_server in recent_servers_to_save), None)
+    existing_recent_server = next((recent_server for recent_server in recent_servers_to_save if server_to_save == recent_server), None)
+
+    console.log(existing_recent_server)
+    console.log(type(existing_recent_server).__name__)
+    console.log(type(server_to_save).__name__)
 
     if existing_recent_server is None:
         recent_servers_to_save.append(server_to_save)
@@ -108,11 +112,11 @@ def run_console() -> None:
     try:
         index_of_recent_server = int(host)
         while index_of_recent_server <= 0 or index_of_recent_server > len(recent_servers):
-            console.print(f":no entry:  There is no recent server with number {index_of_recent_server}. Enter a "
+            console.print(f":prohibited:  There is no recent server with number {index_of_recent_server}. Enter a "
                           f"number between 1 and {len(recent_servers)}")
             index_of_recent_server = int(Prompt.ask(":package:  Please, try to enter again the host name or a number "
                                                     "of one of the recent server listed above to connect"))
-        try_connect_and_read_queries(recent_servers[index_of_recent_server + 1])
+        try_connect_and_read_queries(recent_servers[index_of_recent_server - 1])
     except ValueError:
         port = int(Prompt.ask(f":package:  Enter the port of the server {host}", default=DEFAULT_QUARK_PORT))
         token = Prompt.ask(f":lock:  Enter an access token of the server")
